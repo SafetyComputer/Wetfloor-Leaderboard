@@ -26,6 +26,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - name: Go to frontend   
+      run: cd wetfloor-frontend
     - name: Install dependencies
       run: npm install
       
@@ -37,5 +39,5 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@releases/v4
       with:
           # ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }} # Settings > Secret 建立的 ACCESS_TOKEN，推同個 repo 的話可以不需要
-          BRANCH: production # deploy 到 gh-pages 這個分支
+          BRANCH: production # deploy 到 production 這個分支
           FOLDER: dist # build 後的資料夾
