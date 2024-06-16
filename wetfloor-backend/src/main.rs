@@ -1,31 +1,17 @@
-use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
-use diesel::Connection;
+use actix_web::{App, HttpServer, web};
 use dotenvy::dotenv;
 use std::env;
-
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
-
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    for (k,_) in env::vars() {
-        println!("{k}");
-    }
-    use diesel::mysql::MysqlConnection;
-    let connection_url = env::var("DATABASE_URL").unwrap();
-    let _connection = MysqlConnection::establish(&connection_url).unwrap();
-    HttpServer::new(|| {
-        App::new()
-            .service(hello)
-            .service(echo)
+    use wetfloor_backend;
+    let database_url = env::var("DATABASE_URL").unwrap();
+    let pool = wetfloor_backend::Dbpool::from(&database_url);
+    HttpServer::new(move || {
+        App::new().app_data(web::Data::new(pool.clone()))
+            .service(wetfloor_backend::get_user)
+            .service(wetfloor_backend::echo)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
