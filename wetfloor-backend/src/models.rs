@@ -1,7 +1,10 @@
-use diesel::{deserialize::Queryable, prelude::Insertable};
+use diesel::prelude::*;
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Queryable, Insertable)]
+use crate::schema;
+
+#[derive(Serialize, Deserialize, Insertable, Queryable)]
+#[diesel(table_name = schema::players)]
 pub struct Player{
     pub id: i32,
     pub name: String,

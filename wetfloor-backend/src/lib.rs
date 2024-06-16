@@ -1,9 +1,10 @@
 pub mod models;
-
-use std::{borrow::Borrow, ops::Deref};
+pub mod schema;
 
 use actix_web::{web, get, post, HttpResponse, Responder};
-use diesel::{query_dsl::UpdateAndFetchResults, r2d2::{ConnectionManager, Pool}, MysqlConnection};
+use diesel::{r2d2::{ConnectionManager, Pool}, MysqlConnection};
+use diesel::prelude::*;
+use models::Player;
 
 #[derive(Clone)]
 pub struct Dbpool {
@@ -27,12 +28,14 @@ async fn echo(req_body: String) -> impl Responder {
 
 #[get("/")]
 async fn get_user(db: web::Data<Dbpool>, query: web::Query<models::Player>) -> impl Responder {
+    use schema::players::dsl::*;
+    println!("{}", query.name);
     let connection= &mut db.pool.get().expect("unable to get connection");
-
-    let result = models::Player {
+    let result:Vec<Player> = players.filter(name.eq("ricky")).load(connection).expect("no such player");
+    /*let result = models::Player {
         id: 1,
         name: String::from("abc"),
         elo: 123
-    };
+    };*/
     web::Json(result)
 }
