@@ -1,5 +1,7 @@
 <template>
-  <h1 class="text-3xl font-bold underline text-center">
-    Wetfloor Leaderboard
-  </h1>
+  <RouterView></RouterView>
 </template>
+
+<script setup>
+import {RouterView} from 'vue-router'
+</script>
