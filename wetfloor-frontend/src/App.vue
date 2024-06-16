@@ -9,10 +9,16 @@
         Leaderboard
       </h1>
     </div>
+    <hr class="my-4">
 
-    <hr class="my-8">
+    <div
+        class="mx-auto border-2 w-80 text-2xl text-center rounded border-amber-800 hover:bg-yellow-100 transition cursor-pointer">
+      Add Match Record
+    </div>
+
+    <hr class="my-4">
     <h2 class="text-2xl font-bold text-center">Leaderboard</h2>
-    <hr class="my-8">
+    <hr class="my-4">
 
     <div class="flex flex-col w-[80%]  max-w-[800px] mx-auto gap-10">
       <div
