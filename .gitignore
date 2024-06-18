@@ -1,2 +1,3 @@
 /wetfloor-backend/target
 .env
+wetfloor-fastapi-backend/fastApiProject/database.py
