@@ -1,8 +1,0 @@
--- Your SQL goes here
-DROP TABLE IF EXISTS `player`;
-CREATE TABLE `players`(
-	`id` INTEGER NOT NULL PRIMARY KEY,
-	`name` VARCHAR(20) NOT NULL,
-	`elo` INTEGER NOT NULL
-);
-

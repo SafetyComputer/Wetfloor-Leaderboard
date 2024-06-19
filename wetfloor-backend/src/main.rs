@@ -10,8 +10,8 @@ async fn main() -> std::io::Result<()> {
     let pool = wetfloor_backend::Dbpool::from(&database_url);
     HttpServer::new(move || {
         App::new().app_data(web::Data::new(pool.clone()))
-            .service(wetfloor_backend::get_user)
-            .service(wetfloor_backend::echo)
+            .service(wetfloor_backend::get_player)
+            .service(wetfloor_backend::post_player)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

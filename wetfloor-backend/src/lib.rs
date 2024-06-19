@@ -1,14 +1,37 @@
 pub mod models;
 pub mod schema;
 
-use actix_web::{web, get, post, HttpResponse, Responder};
-use diesel::{r2d2::{ConnectionManager, Pool}, MysqlConnection};
+use actix_web::{get, post, web, Responder};
+use diesel::{insert_into, r2d2::{ConnectionManager, Pool}, MysqlConnection};
 use diesel::prelude::*;
 use models::Player;
+use serde::Deserialize;
 
 #[derive(Clone)]
 pub struct Dbpool {
     pub pool: Pool<ConnectionManager<MysqlConnection>>
+}
+
+#[derive(Deserialize)]
+struct PlayerQuery {
+    id: Option<i32>,
+    name: Option<String>
+}
+
+#[derive(Deserialize)]
+struct PlayerPost {
+    name: String,
+    elo: Option<i32>
+}
+
+impl PlayerPost {
+    fn to_player(self) -> Player {
+        Player {
+            id: None,
+            name: self.name,
+            elo: self.elo
+        }
+    }
 }
 
 impl Dbpool {
@@ -21,21 +44,26 @@ impl Dbpool {
     }
 }
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
+#[get("/player")]
+async fn get_player(db: web::Data<Dbpool>, query: web::Query<PlayerQuery>) -> impl Responder {
+    use schema::players::dsl::*;
+    let connection= &mut db.pool.get().expect("unable to get connection");
+    let result: Vec<Player> = match &query.name {
+        Some(v) => players.filter(name.eq(v)).load(connection).expect("db error"),
+        None => players.filter(id.eq(query.id.expect("no query"))).load(connection).expect("db error")
+    };
+    
+    web::Json(result)
 }
 
-#[get("/")]
-async fn get_user(db: web::Data<Dbpool>, query: web::Query<models::Player>) -> impl Responder {
+#[post("/player")]
+async fn post_player(db: web::Data<Dbpool>, new_player: web::Json<PlayerPost>) -> impl Responder {
     use schema::players::dsl::*;
-    println!("{}", query.name);
-    let connection= &mut db.pool.get().expect("unable to get connection");
-    let result:Vec<Player> = players.filter(name.eq("ricky")).load(connection).expect("no such player");
-    /*let result = models::Player {
-        id: 1,
-        name: String::from("abc"),
-        elo: 123
-    };*/
-    web::Json(result)
+    let connection = &mut db.pool.get().expect("unable to get connection");
+    let new_player = new_player.into_inner().to_player();
+    let result = insert_into(players).values(&new_player).execute(connection);
+    match result {
+        Ok(_) => web::Json("success"),
+        Err(_) => web::Json("failed to insert")
+    }
 }
