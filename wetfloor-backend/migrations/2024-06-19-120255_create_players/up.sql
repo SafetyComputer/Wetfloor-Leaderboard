@@ -1,0 +1,6 @@
+-- Your SQL goes here
+CREATE TABLE players (
+    id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    name VARCHAR(20) NOT NULL,
+    elo INT NOT NULL DEFAULT 1500
+);

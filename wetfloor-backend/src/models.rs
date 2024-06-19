@@ -5,8 +5,10 @@ use crate::schema;
 
 #[derive(Serialize, Deserialize, Insertable, Queryable)]
 #[diesel(table_name = schema::players)]
-pub struct Player{
-    pub id: i32,
+pub struct Player {
+    #[diesel(deserialize_as = i32)]
+    pub id: Option<i32>,
     pub name: String,
-    pub elo: i32
+    #[diesel(deserialize_as = i32)]
+    pub elo: Option<i32>
 }
