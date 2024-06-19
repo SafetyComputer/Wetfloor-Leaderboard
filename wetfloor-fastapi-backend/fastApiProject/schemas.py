@@ -6,11 +6,15 @@ from pydantic import BaseModel
 
 class PlayerBase(BaseModel):
     name: str
-    default_elo: Optional[int] = 1000
 
 
 class PlayerCreate(PlayerBase):
-    pass
+    default_elo: Optional[int] = 1000
+
+
+class PlayerPut(BaseModel):
+    name: str | None = None
+    elo: int | None = None
 
 
 class Player(PlayerBase):

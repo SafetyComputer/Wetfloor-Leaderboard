@@ -2,8 +2,7 @@ from typing import List
 
 from fastapi import FastAPI, HTTPException
 
-from crud import get_player, create_player, update_player, delete_player, get_match, create_match, update_match, \
-    delete_match, get_matches_by_player
+from crud import *
 from database import database
 from schemas import PlayerCreate, Player, MatchCreate, Match
 
@@ -22,6 +21,8 @@ async def shutdown():
 
 @app.post("/players/", response_model=Player)
 async def create_new_player(player: PlayerCreate):
+    if await get_player_by_name(player.name):
+        raise HTTPException(status_code=400, detail="Player already exists")
     return await create_player(player)
 
 
@@ -33,8 +34,15 @@ async def read_player(player_id: int):
     return player
 
 
+@app.get("/players/", response_model=List[Player])
+async def read_all_players():
+    return await get_all_players()
+
+
 @app.put("/players/{player_id}", response_model=Player)
-async def update_existing_player(player_id: int, player: PlayerCreate):
+async def update_existing_player(player_id: int, player: PlayerPut):
+    if player.name is None and player.elo is None:
+        raise HTTPException(status_code=400, detail="Name or ELO is required")
     existing_player = await get_player(player_id)
     if existing_player is None:
         raise HTTPException(status_code=404, detail="Player not found")
@@ -60,6 +68,11 @@ async def read_match(match_id: int):
     if match is None:
         raise HTTPException(status_code=404, detail="Match not found")
     return match
+
+@app.get("/matches/", response_model=List[Match])
+async def read_all_matches():
+    return await get_all_matches()
+
 
 
 @app.put("/matches/{match_id}", response_model=Match)
