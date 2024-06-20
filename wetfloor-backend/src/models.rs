@@ -12,3 +12,14 @@ pub struct Player {
     #[diesel(deserialize_as = i32)]
     pub elo: Option<i32>
 }
+
+#[derive(Serialize, Deserialize, Insertable, Queryable)]
+#[diesel(table_name = schema::matches)]
+pub struct Match {
+    #[diesel(deserialize_as = i32)]
+    pub id: Option<i32>,
+    pub winner: i32,
+    pub loser: i32,
+    #[diesel(deserialize_as = chrono::NaiveDateTime)]
+    pub time: Option<chrono::NaiveDateTime>
+}
