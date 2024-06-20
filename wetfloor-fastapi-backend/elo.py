@@ -15,4 +15,4 @@ def calculate_elo(player1_elo, player2_elo, score1, score2, k=32):
     new_player1_elo = player1_elo + k * (actual_score1 - expected_score1)
     new_player2_elo = player2_elo + k * (actual_score2 - expected_score2)
 
-    return int(new_player1_elo), int(new_player2_elo)
+    return int(round(new_player1_elo)), int(round(new_player2_elo))

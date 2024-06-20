@@ -3,12 +3,23 @@ from datetime import datetime
 from database import database
 from elo import calculate_elo
 from models import players, matches
-from schemas import PlayerCreate, MatchCreate
+from schemas import PlayerCreate, MatchCreate, PlayerPut
 
 
 async def get_player(player_id: int):
     query = players.select().where(players.c.id == player_id)
     return await database.fetch_one(query)
+
+
+async def get_player_by_name(player_name: str):
+    query = players.select().where(players.c.name == player_name)
+    return await database.fetch_one(query)
+
+
+async def get_all_players():
+    """Get all players with the order of their ELO rating."""
+    query = players.select().order_by(players.c.elo.desc())
+    return await database.fetch_all(query)
 
 
 async def create_player(player: PlayerCreate):
@@ -18,10 +29,13 @@ async def create_player(player: PlayerCreate):
     return {**player.dict(), "id": last_record_id, "elo": default_elo}
 
 
-async def update_player(player_id: int, player: PlayerCreate):
-    query = players.update().where(players.c.id == player_id).values(name=player.name, default_elo=player.default_elo)
+async def update_player(player_id: int, player: PlayerPut):
+    update_data = player.dict(exclude_unset=True)
+    query = players.update().where(players.c.id == player_id).values(**update_data)
     await database.execute(query)
-    return {**player.dict(), "id": player_id}
+
+    player = await get_player(player_id)
+    return {**player, "id": player_id}
 
 
 async def delete_player(player_id: int):
@@ -33,6 +47,11 @@ async def delete_player(player_id: int):
 async def get_match(match_id: int):
     query = matches.select().where(matches.c.id == match_id)
     return await database.fetch_one(query)
+
+
+async def get_all_matches():
+    query = matches.select().order_by(matches.c.date.desc())
+    return await database.fetch_all(query)
 
 
 async def create_match(match: MatchCreate):
@@ -57,7 +76,9 @@ async def create_match(match: MatchCreate):
         await update_player_elo(match.player1_id, new_elo1)
         await update_player_elo(match.player2_id, new_elo2)
 
-    return {**match.dict(), "id": last_record_id}
+    new_match = await get_match(last_record_id)
+
+    return new_match
 
 
 async def update_player_elo(player_id: int, new_elo: int):
