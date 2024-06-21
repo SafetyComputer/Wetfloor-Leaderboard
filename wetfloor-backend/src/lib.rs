@@ -2,7 +2,7 @@ pub mod models;
 pub mod schema;
 
 use actix_web::{get, post, web, Responder};
-use diesel::{insert_into, r2d2::{ConnectionManager, Pool, PooledConnection}, MysqlConnection};
+use diesel::{insert_into, r2d2::{ConnectionManager, Pool, PooledConnection}, update, MysqlConnection};
 use diesel::prelude::*;
 use models::{Match, Player};
 use serde::{Deserialize, Serialize};
@@ -52,7 +52,9 @@ struct MatchGet {
     id: i32,
     winner: Player,
     loser: Player,
-    time: chrono::NaiveDateTime
+    time: chrono::NaiveDateTime,
+    win_points: i32,
+    lose_points: i32
 }
 
 impl MatchGet {
@@ -64,7 +66,9 @@ impl MatchGet {
             id: origin.id.unwrap(),
             winner: winner,
             loser: loser,
-            time: origin.time.unwrap()
+            time: origin.time.unwrap(),
+            win_points: origin.win_points,
+            lose_points: origin.lose_points
         }
     }
 }
@@ -115,4 +119,36 @@ async fn get_match(db: web::Data<Dbpool>, query: web::Query<MatchQuery>) -> impl
     };
     let result: Vec<MatchGet> = result_db.iter().map(|v| -> MatchGet {MatchGet::from(v, connection)}).collect();
     web::Json(result)
+}
+
+#[post("/match")]
+async fn post_match(db: web::Data<Dbpool>, new_match: web::Json<Match>) -> impl Responder {
+    use schema::matches::dsl::*;
+    let connection = &mut db.get_connection();
+    let result = connection.transaction(|conn|{
+        let new_match = new_match.into_inner();
+        insert_into(matches).values(&new_match).execute(conn)?;
+        let target_winner = schema::players::dsl::players.find(new_match.winner);
+        let target_loser = schema::players::dsl::players.find(new_match.loser);
+        let new_winner: Player = target_winner.first(conn)?;
+        let new_loser: Player = target_loser.first(conn)?;
+        let (elo_winner, elo_loser) = elo_update(new_winner, new_loser);
+        update(target_winner).set(schema::players::dsl::elo.eq(elo_winner)).execute(conn)?;
+        update(target_loser).set(schema::players::dsl::elo.eq(elo_loser)).execute(conn)
+    });
+    
+    match result {
+        Ok(_) => web::Json("success"),
+        Err(_) => web::Json("failed")
+    }
+}
+
+fn elo_update(winner: Player, loser: Player) -> (i32, i32) {
+    let elo_winner = winner.elo.unwrap();
+    let elo_loser = loser.elo.unwrap();
+    let expected_winner = 1_f32 / (1_f32 + 10_f32.powf((elo_loser as f32- elo_winner as f32) / 400 as f32));
+    let expected_loser = 1_f32 - expected_winner;
+    
+    ((elo_winner as f32 + 32_f32 * (1_f32 - expected_winner)).round() as i32,
+    (elo_loser as f32 + 32_f32 * (0_f32 - expected_loser)).round() as i32)
 }

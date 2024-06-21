@@ -6,6 +6,8 @@ diesel::table! {
         winner -> Integer,
         loser -> Integer,
         time -> Datetime,
+        win_points -> Integer,
+        lose_points -> Integer,
     }
 }
 
