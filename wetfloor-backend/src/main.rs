@@ -12,6 +12,8 @@ async fn main() -> std::io::Result<()> {
         App::new().app_data(web::Data::new(pool.clone()))
             .service(wetfloor_backend::get_player)
             .service(wetfloor_backend::post_player)
+            .service(wetfloor_backend::get_match)
+            .service(wetfloor_backend::post_match)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
