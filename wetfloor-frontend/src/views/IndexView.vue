@@ -1,42 +1,24 @@
 <template>
-  <div class="bg-gradient-to-b from-orange-100 to-red-100 -z-20 w-full h-[100vh]">
-    <div class="flex justify-center items-center">
-      <h1 class="text-3xl lg:text-4xl xl:text-5xl -mr-12 font-bold">
-        Wetfloor
-      </h1>
-      <img alt="Wetfloor" class="relative " src="../assets/img.png">
-      <h1 class="text-3xl lg:text-4xl xl:text-5xl -ml-14 font-bold">
-        Leaderboard
-      </h1>
-    </div>
-    <hr class="my-4">
+  <div class="container mx-auto flex flex-col gap-8">
+    <HeroComponent></HeroComponent>
+    <RouterLink
+        class="block mx-auto p-2 border-2 w-[80%] text-2xl text-center rounded-xl border-amber-800 hover:bg-yellow-100 transition cursor-pointer"
+        to="/add">
+      Add Match Record
+    </RouterLink>
 
-
-      <div
-          class="mx-auto border-2 w-80 text-2xl text-center rounded border-amber-800 hover:bg-yellow-100 transition cursor-pointer">
-        <RouterLink to="/add">Add Match Record</RouterLink>
-      </div>
-
-    <hr class="my-4">
-    <h2 class="text-2xl font-bold text-center">Leaderboard</h2>
-    <hr class="my-4">
-
-    <div class="flex flex-col w-[80%]  max-w-[800px] mx-auto gap-10">
-      <div
-          class="border-2 border-amber-600 w-full mx-auto rounded-xl text-2xl font-bold flex justify-between p-4 items-center">
-        <span class="text-red-500 text-3xl">0001</span>
-        <span class="">HAJAHA</span>
-        <span class="text-yellow-600">2000</span>
-      </div>
-      <div
-          class="border-2 border-amber-600 w-full mx-auto rounded-xl text-2xl font-bold flex justify-between p-4 items-center">
-        <span class="text-red-500 text-3xl">0002</span>
-        <span class="">主教</span>
-        <span class="text-yellow-600">1500</span>
+    <div class="flex flex-col w-[80%] max-w-[800px] mx-auto bg-amber-50 rounded-xl shadow-2xl">
+      <h2 class="text-3xl font-bold text-center font-serif py-4">Real Time Leaderboard
+      </h2>
+      <hr>
+      <div class="grid grid-cols-3 gap-4 p-4 items-center text-center md:text-2xl">
+        <div>1</div>
+        <div>HAJAHA</div>
+        <div>2000</div>
       </div>
     </div>
   </div>
-
 </template>
 <script lang="ts" setup>
+import HeroComponent from "../components/HeroComponent.vue";
 </script>
