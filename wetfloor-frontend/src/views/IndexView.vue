@@ -47,6 +47,7 @@ let players = ref([]);
 const getPlayers = async () => {
   return await axios.get("/api/player")
       .then((res) => {
+				console.log(res)
         players.value = res.data.sort((a, b) => b.elo - a.elo);
       })
       .catch((err) => {
