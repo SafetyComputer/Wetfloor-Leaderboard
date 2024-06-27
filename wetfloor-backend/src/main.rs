@@ -1,6 +1,7 @@
 use actix_web::{App, HttpServer, web};
 use dotenvy::dotenv;
 use std::env;
+use actix_cors::Cors;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -9,11 +10,17 @@ async fn main() -> std::io::Result<()> {
     let database_url = env::var("DATABASE_URL").unwrap();
     let pool = wetfloor_backend::Dbpool::from(&database_url);
     HttpServer::new(move || {
-        App::new().app_data(web::Data::new(pool.clone()))
+        let cors = Cors::default()
+            .allowed_origin("https://wetfloor.dafenci.cc")
+            .allow_any_header()
+            .allow_any_method();
+        let service = App::new().app_data(web::Data::new(pool.clone()))
             .service(wetfloor_backend::get_player)
             .service(wetfloor_backend::post_player)
             .service(wetfloor_backend::get_match)
             .service(wetfloor_backend::post_match)
+            .wrap(cors);
+        service
     })
     .bind(("127.0.0.1", 8080))?
     .run()
