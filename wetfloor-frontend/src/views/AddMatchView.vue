@@ -89,11 +89,11 @@ const submitMatch = async () => {
   return await axios.post(
       "/api/match",
       {
-        time: date.value,
         winner: winner,
         loser: loser,
         win_points: winnerScore,
-        lose_points: loserScore
+        lose_points: loserScore,
+        time: date.value + ":00",
       })
       .then((res) => {
         console.log(res);

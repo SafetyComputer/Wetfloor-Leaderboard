@@ -9,8 +9,9 @@
       Leaderboard
     </h1>
   </div>
-  <div class="flex lg:hidden justify-center items-center font-mono">
-    <img alt="Wetfloor" class="relative w-36 -ml-12 md:w-48 md:-mr-4" src="../assets/wetfloor-classic.png">
+  <div class="flex  lg:hidden justify-center items-center font-mono">
+    <img alt="Wetfloor" class="relative w-36 -ml-12 md:w-48 md:-mr-4" src="../assets/wetfloor-classic.png"
+         @click="$router.push('/')">
     <div class="flex flex-col md:gap-4">
       <h1 class="text-3xl md:text-4xl font-bold">
         Wetfloor
