@@ -45,7 +45,7 @@ import {ref} from "vue";
 let players = ref([]);
 
 const getPlayers = async () => {
-  return await axios.get("/api/player")
+  return await axios.get("http://149.104.27.233:35668/player")
       .then((res) => {
 				console.log(res)
         players.value = res.data.sort((a, b) => b.elo - a.elo);
