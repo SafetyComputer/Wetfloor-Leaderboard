@@ -10,7 +10,9 @@ pub struct Player {
     pub id: Option<i32>,
     pub name: String,
     #[diesel(deserialize_as = i32)]
-    pub elo: Option<i32>
+    pub elo: Option<i32>,
+    #[diesel(deserialize_as = i32)]
+    pub default_elo: Option<i32>
 }
 
 #[derive(Serialize, Deserialize, Insertable, Queryable)]

@@ -52,7 +52,7 @@ let players = ref([]);
 
 const getPlayers = async () => {
       return await axios.get(
-          "/api/player", {
+          "http://149.104.27.233:35668/player", {
             headers: {
               "Access-Control-Allow-Origin": "*",
               "Access-Control-Allow-Methods": "GET, POST, PATCH, PUT, DELETE, OPTIONS",

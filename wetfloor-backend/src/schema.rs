@@ -17,6 +17,7 @@ diesel::table! {
         #[max_length = 20]
         name -> Varchar,
         elo -> Integer,
+        default_elo -> Integer,
     }
 }
 
