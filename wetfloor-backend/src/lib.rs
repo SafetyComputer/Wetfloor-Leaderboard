@@ -128,31 +128,27 @@ async fn post_match(db: web::Data<Dbpool>, new_match: web::Json<Match>) -> impl 
     use schema::matches::dsl::*;
     let connection = &mut db.get_connection();
 
+    let result: Result<(), diesel::result::Error> = connection.transaction(|conn| {
+        insert_into(matches).values(&*new_match).execute(conn)?;
 
-    let insert_result = connection.transaction(|conn| {
-        // let new_match = new_match.into_inner();
-        insert_into(matches).values(&*new_match).execute(conn)
+        // get the latest match time
+        let latest_match: Match = matches.order(time.desc()).first(conn).expect("db error");
+        let latest_match_time = latest_match.time.unwrap();
+        let new_match_time = new_match.time.unwrap();
+
+        // update elo
+        // if the new match is older than the latest match, update all players' elo from default_elo
+        // otherwise, update the winner and loser's elo from the new match
+        if new_match_time < latest_match_time {
+            elo_update_from_default(conn)?;
+        } else {
+            elo_update_from_match(conn, &new_match)?;
+        };
+
+        Ok(())
     });
 
-    if !insert_result.is_ok() {
-        return web::Json("failed to insert");
-    }
-
-    // get the latest match time
-    let latest_match: Match = matches.order(time.desc()).first(connection).expect("db error");
-    let latest_match_time = latest_match.time.unwrap();
-    let new_match_time = new_match.time.unwrap();
-
-    // update elo
-    // if the new match is older than the latest match, update all players' elo from default_elo
-    // otherwise, update the winner and loser's elo from the new match
-    let elo_update_result = if new_match_time < latest_match_time {
-        elo_update_from_default(connection)
-    } else {
-        elo_update_from_match(connection, &new_match)
-    };
-
-    match elo_update_result {
+    match result {
         Ok(_) => web::Json("success"),
         Err(_) => web::Json("failed to update elo")
     }
@@ -178,11 +174,9 @@ fn elo_update_from_match(connection: &mut PooledConnection<ConnectionManager<Mys
     let loser_elo = loser.elo.unwrap();
     let (new_winner_elo, new_loser_elo) = elo_update(winner_elo, loser_elo);
 
-    connection.transaction(|conn| {
-        update(players.find(new_match.winner)).set(schema::players::dsl::elo.eq(new_winner_elo)).execute(conn)?;
-        update(players.find(new_match.loser)).set(schema::players::dsl::elo.eq(new_loser_elo)).execute(conn)?;
-        Ok(())
-    })
+    update(players.find(new_match.winner)).set(schema::players::dsl::elo.eq(new_winner_elo)).execute(connection)?;
+    update(players.find(new_match.loser)).set(schema::players::dsl::elo.eq(new_loser_elo)).execute(connection)?;
+    Ok(())
 }
 
 fn elo_update_from_default(connection: &mut PooledConnection<ConnectionManager<MysqlConnection>>) -> Result<(), diesel::result::Error> {
@@ -207,10 +201,8 @@ fn elo_update_from_default(connection: &mut PooledConnection<ConnectionManager<M
         elo_map.insert(current_match.loser, new_loser_elo);
     }
 
-    connection.transaction(|conn| {
-        for (new_id, new_elo) in elo_map.iter() {
-            update(players.find(new_id)).set(schema::players::dsl::elo.eq(new_elo)).execute(conn)?;
-        }
-        Ok(())
-    })
+    for (new_id, new_elo) in elo_map.iter() {
+        update(players.find(new_id)).set(schema::players::dsl::elo.eq(new_elo)).execute(connection)?;
+    }
+    Ok(())
 }
