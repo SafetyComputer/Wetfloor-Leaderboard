@@ -2,7 +2,7 @@ pub mod models;
 pub mod schema;
 
 use std::collections::HashMap;
-use actix_web::{get, post, web, Responder};
+use actix_web::{get, post, web, Responder, delete};
 use diesel::{insert_into, r2d2::{ConnectionManager, Pool, PooledConnection}, update, MysqlConnection};
 use diesel::prelude::*;
 use models::{Match, Player};
@@ -124,9 +124,14 @@ async fn get_match(db: web::Data<Dbpool>, query: web::Query<MatchQuery>) -> impl
 }
 
 #[post("/match")]
-async fn post_match(db: web::Data<Dbpool>, new_match: web::Json<Match>) -> impl Responder {
+async fn post_match(db: web::Data<Dbpool>, mut new_match: web::Json<Match>) -> impl Responder {
     use schema::matches::dsl::*;
     let connection = &mut db.get_connection();
+
+    new_match.time = match new_match.time {
+        Some(v) => Some(v),
+        None => Some(chrono::Local::now().naive_local())
+    };
 
     let result: Result<(), diesel::result::Error> = connection.transaction(|conn| {
         insert_into(matches).values(&*new_match).execute(conn)?;
@@ -151,6 +156,25 @@ async fn post_match(db: web::Data<Dbpool>, new_match: web::Json<Match>) -> impl 
     match result {
         Ok(_) => web::Json("success"),
         Err(_) => web::Json("failed to update elo")
+    }
+}
+
+#[delete("/match")]
+async fn delete_match(db: web::Data<Dbpool>, query: web::Query<MatchQuery>) -> impl Responder {
+    use schema::matches::dsl::*;
+    let connection = &mut db.get_connection();
+    let result = match query.id {
+        Some(v) => connection.transaction(|conn| {
+            let result = diesel::delete(matches.find(v)).execute(conn)?;
+            elo_update_from_default(conn)?;
+            Ok(result)
+        }),
+        None => Err(diesel::result::Error::NotFound)
+    };
+
+    match result {
+        Ok(_) => web::Json("success"),
+        Err(_) => web::Json("failed to delete")
     }
 }
 

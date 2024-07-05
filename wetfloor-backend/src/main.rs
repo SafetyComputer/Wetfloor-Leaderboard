@@ -19,10 +19,11 @@ async fn main() -> std::io::Result<()> {
             .service(wetfloor_backend::post_player)
             .service(wetfloor_backend::get_match)
             .service(wetfloor_backend::post_match)
+            .service(wetfloor_backend::delete_match)
             .wrap(cors);
         service
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("0.0.0.0", 35668))?
     .run()
     .await
 }
