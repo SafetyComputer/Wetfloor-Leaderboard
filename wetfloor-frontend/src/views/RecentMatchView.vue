@@ -9,7 +9,7 @@
       </div>
       <div>
         <div class="font-bold text-orange-400 text-4xl">VS</div>
-        <div>{{ moment(match.time).add(8, "hours").calendar() }}</div>
+        <div>{{ moment(match.time).calendar() }}</div>
       </div>
       <div>
         <div class="font-bold text-gray-500 text-4xl">{{ match.lose_points }}</div>

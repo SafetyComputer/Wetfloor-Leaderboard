@@ -93,7 +93,7 @@ const submitMatch = async () => {
         loser: loser,
         win_points: winnerScore,
         lose_points: loserScore,
-        time: date.value + ":00",
+        time: date.value ? date.value + ":00" : null
       })
       .then((res) => {
         console.log(res);
