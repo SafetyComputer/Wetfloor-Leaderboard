@@ -28,7 +28,7 @@ import moment from "moment";
 let matches = ref([]);
 
 const getMatches = async () => {
-  return await axios.get("https://149.107.27.233:35670/match")
+  return await axios.get("https://149.104.27.233:35670/match")
       .then((res) => {
         matches.value = res.data
             .sort((a, b) => moment(a.time) - moment(b.time))

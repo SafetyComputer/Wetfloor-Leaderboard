@@ -61,7 +61,7 @@ let score1 = ref(null);
 let score2 = ref(null);
 
 const getPlayers = async () => {
-  return await axios.get("https://149.107.27.233:35670/player")
+  return await axios.get("https://149.104.27.233:35670/player")
       .then((res) => {
         players.value = res.data.sort((a, b) => b.elo - a.elo);
       })
